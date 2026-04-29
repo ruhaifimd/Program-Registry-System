@@ -463,21 +463,7 @@ tbody td{
   width:36px;
 }
 
-.btn-del{
-  background:rgba(239,68,68,.1);
-  border:1px solid rgba(239,68,68,.2);
-  color:var(--red);
-  width:30px;height:30px;
-  border-radius:8px;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  transition:all .2s;
-}
 
-.btn-del:hover{background:rgba(239,68,68,.25)}
-.btn-del svg{width:13px;height:13px}
 
 /* ── empty ── */
 .empty{
@@ -514,78 +500,7 @@ tbody td{
   animation:spin .7s linear infinite;
 }
 
-/* ── delete confirm modal ── */
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.7);
-  backdrop-filter:blur(4px);
-  z-index:100;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-}
 
-.overlay.show{display:flex}
-
-.modal{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:20px;
-  padding:28px 24px;
-  max-width:340px;
-  width:100%;
-  text-align:center;
-  animation:pop .3s cubic-bezier(.34,1.56,.64,1) both;
-}
-
-.modal-icon{
-  width:52px;height:52px;
-  border-radius:50%;
-  background:rgba(239,68,68,.12);
-  border:1px solid rgba(239,68,68,.3);
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  margin-bottom:16px;
-}
-
-.modal-icon svg{width:22px;height:22px;color:var(--red)}
-.modal h3{font-size:17px;font-weight:700;margin-bottom:8px}
-.modal p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:24px}
-
-.modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-.btn-cancel{
-  height:44px;
-  background:var(--surface2);
-  border:1px solid var(--border);
-  color:var(--text);
-  border-radius:10px;
-  font-family:'Sora',sans-serif;
-  font-size:13px;
-  font-weight:600;
-  cursor:pointer;
-  transition:all .2s;
-}
-
-.btn-cancel:hover{background:var(--border)}
-
-.btn-confirm-del{
-  height:44px;
-  background:rgba(239,68,68,.15);
-  border:1px solid rgba(239,68,68,.35);
-  color:var(--red);
-  border-radius:10px;
-  font-family:'Sora',sans-serif;
-  font-size:13px;
-  font-weight:700;
-  cursor:pointer;
-  transition:all .2s;
-}
-
-.btn-confirm-del:hover{background:rgba(239,68,68,.3)}
 
 /* ── footer ── */
 .footer{
@@ -811,31 +726,13 @@ tbody td{
   <div class="footer">© 2026 · Sistem Kehadiran Kursus · Dikuasakan Firebase</div>
 </div>
 
-<!-- DELETE CONFIRM MODAL -->
-<div class="overlay" id="delOverlay">
-  <div class="modal">
-    <div class="modal-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="3 6 5 6 21 6"/>
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-      </svg>
-    </div>
-    <h3>Padam Rekod?</h3>
-    <p>Rekod peserta ini akan dipadam secara kekal dari pangkalan data. Tindakan ini tidak boleh dibatalkan.</p>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeModal()">Batal</button>
-      <button class="btn-confirm-del" onclick="confirmDelete()">Ya, Padam</button>
-    </div>
-  </div>
-</div>
-
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 // ── Firebase config ──
 const firebaseConfig = {
@@ -853,8 +750,7 @@ const db  = getDatabase(app);
 const kehadiranRef = ref(db, 'kehadiran');
 
 // ── state ──
-let allData   = [];   // [{id, nama, jawatan, tempat, tel, emel, tarikh, masa}]
-let deleteId  = null;
+let allData   = [];
 let dataReady = false;
 
 // ── realtime listener ──
@@ -876,29 +772,6 @@ onValue(kehadiranRef, snap => {
   renderTable([]);
   showToast('Ralat membaca data: ' + err.message, 'error');
 });
-
-// ── expose to window for onclick handlers ──
-window._deleteEntry = id => {
-  deleteId = id;
-  document.getElementById('delOverlay').classList.add('show');
-};
-
-window.closeModal = () => {
-  document.getElementById('delOverlay').classList.remove('show');
-  deleteId = null;
-};
-
-window.confirmDelete = async () => {
-  if (!deleteId) return;
-  const id = deleteId;
-  window.closeModal();
-  try {
-    await remove(ref(db, 'kehadiran/' + id));
-    showToast('Rekod berjaya dipadam.', 'success');
-  } catch(e) {
-    showToast('Gagal memadam: ' + e.message, 'error');
-  }
-};
 
 // ── submit ──
 document.getElementById('regForm').addEventListener('submit', async e => {
@@ -998,14 +871,6 @@ function renderTable(data) {
         <div style="font-size:12px;color:var(--muted)">${d.tarikh||''}</div>
         <div style="font-size:11px;color:var(--muted);opacity:.7">${d.masaDisplay||''}</div>
       </td>
-      <td>
-        <button class="btn-del" onclick="window._deleteEntry('${d.id}')" title="Padam">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-          </svg>
-        </button>
-      </td>
     </tr>`).join('');
 
   container.innerHTML = `
@@ -1018,7 +883,6 @@ function renderTable(data) {
             <th>Jawatan / Tempat</th>
             <th>Telefon</th>
             <th>Tarikh/Masa</th>
-            <th></th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>

@@ -544,6 +544,161 @@ tbody td{
 @media(max-width:600px){
   thead th:nth-child(4),tbody td:nth-child(4){display:none}
 }
+/* ── PASSWORD MODAL ── */
+.pw-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.75);
+  backdrop-filter:blur(6px);
+  z-index:200;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.pw-overlay.show{display:flex}
+
+.pw-modal{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:32px 28px 28px;
+  max-width:360px;
+  width:100%;
+  text-align:center;
+  animation:popIn .35s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+@keyframes popIn{
+  from{opacity:0;transform:scale(.88) translateY(16px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+
+.pw-icon{
+  width:56px;height:56px;
+  border-radius:16px;
+  background:var(--teal-dim);
+  border:1px solid rgba(0,201,167,.3);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:18px;
+  box-shadow:0 0 20px var(--teal-glow);
+}
+.pw-icon svg{width:24px;height:24px;color:var(--teal)}
+
+.pw-title{font-size:18px;font-weight:700;margin-bottom:7px}
+.pw-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:22px}
+
+.pw-field{
+  position:relative;
+  margin-bottom:8px;
+}
+.pw-field input{
+  padding-right:48px;
+  text-align:left;
+  letter-spacing:.1em;
+}
+.pw-eye{
+  position:absolute;
+  right:14px;top:50%;
+  transform:translateY(-50%);
+  background:transparent;
+  border:none;
+  cursor:pointer;
+  color:var(--muted);
+  padding:4px;
+  display:flex;
+  align-items:center;
+  transition:color .2s;
+}
+.pw-eye:hover{color:var(--teal)}
+.pw-eye svg{width:16px;height:16px}
+
+.pw-err{
+  font-size:12px;
+  color:var(--red);
+  margin-bottom:18px;
+  display:none;
+  text-align:left;
+  padding-left:4px;
+}
+.pw-err.show{display:block}
+
+.pw-btns{
+  display:grid;
+  grid-template-columns:1fr 1.6fr;
+  gap:10px;
+  margin-top:6px;
+}
+
+.pw-cancel{
+  height:46px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  color:var(--muted);
+  border-radius:12px;
+  font-family:'Sora',sans-serif;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .2s;
+}
+.pw-cancel:hover{color:var(--text);background:var(--border)}
+
+.pw-submit{
+  height:46px;
+  background:linear-gradient(135deg,var(--teal),#00A88D);
+  color:#000;
+  border:none;
+  border-radius:12px;
+  font-family:'Sora',sans-serif;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  transition:all .2s;
+  box-shadow:0 4px 14px rgba(0,201,167,.3);
+}
+.pw-submit:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,201,167,.4)}
+
+/* ── LOGOUT BAR ── */
+.logout-bar{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  background:rgba(0,201,167,.12);
+  border-top:1px solid rgba(0,201,167,.25);
+  backdrop-filter:blur(8px);
+  padding:10px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  z-index:50;
+  font-size:12px;
+  font-weight:600;
+  color:var(--teal);
+  letter-spacing:.04em;
+}
+.logout-bar span{display:flex;align-items:center;gap:6px}
+.logout-bar button{
+  background:rgba(0,201,167,.15);
+  border:1px solid rgba(0,201,167,.3);
+  color:var(--teal);
+  padding:6px 14px;
+  border-radius:8px;
+  font-family:'Sora',sans-serif;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  transition:all .2s;
+}
+.logout-bar button:hover{background:rgba(0,201,167,.25)}
+
 </style>
 </head>
 <body>
@@ -570,11 +725,12 @@ tbody td{
       </svg>
       Daftar Hadir
     </button>
-    <button class="tab" id="tabSenarai" onclick="switchTab('senarai')">
+    <button class="tab" id="tabSenarai" onclick="requestAdminAccess()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
       </svg>
-      Senarai Hadir
+      Panel Admin
     </button>
   </div>
 
@@ -724,6 +880,59 @@ tbody td{
   </div><!-- /card -->
 
   <div class="footer">© 2026 · Sistem Kehadiran Kursus · Dikuasakan Firebase</div>
+</div>
+
+<!-- PASSWORD MODAL -->
+<div class="pw-overlay" id="pwOverlay">
+  <div class="pw-modal">
+    <div class="pw-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+    <h3 class="pw-title">Akses Admin</h3>
+    <p class="pw-sub">Masukkan kata laluan untuk melihat senarai kehadiran.</p>
+    <div class="pw-field">
+      <input type="password" id="pwInput" placeholder="Kata laluan" autocomplete="current-password" onkeydown="if(event.key==='Enter')verifyPassword()">
+      <button class="pw-eye" type="button" onclick="togglePwEye()" id="pwEyeBtn" title="Tunjuk/sembunyi">
+        <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
+    <p class="pw-err" id="pwErr">Kata laluan salah. Cuba lagi.</p>
+    <div class="pw-btns">
+      <button class="pw-cancel" onclick="closePwModal()">Batal</button>
+      <button class="pw-submit" onclick="verifyPassword()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/>
+          <line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+        Log Masuk
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGOUT BAR (shown when admin logged in) -->
+<div class="logout-bar" id="logoutBar" style="display:none">
+  <span>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+    Mod Admin Aktif
+  </span>
+  <button onclick="adminLogout()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+    Log Keluar
+  </button>
 </div>
 
 <!-- TOAST -->
@@ -962,7 +1171,70 @@ document.getElementById('tel').addEventListener('input', function(){
 </script>
 
 <script>
-// tab switching (global, outside module)
+// ════════════════════════════════
+//  TETAPKAN KATA LALUAN DI SINI
+// ════════════════════════════════
+const ADMIN_PASSWORD = 'JKNKelantan2026';
+// ════════════════════════════════
+
+let adminUnlocked = false;
+
+function requestAdminAccess() {
+  if (adminUnlocked) {
+    switchTab('senarai');
+    return;
+  }
+  document.getElementById('pwInput').value = '';
+  document.getElementById('pwErr').classList.remove('show');
+  document.getElementById('pwOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('pwInput').focus(), 100);
+}
+
+function closePwModal() {
+  document.getElementById('pwOverlay').classList.remove('show');
+  document.getElementById('pwErr').classList.remove('show');
+}
+
+function verifyPassword() {
+  const val = document.getElementById('pwInput').value;
+  if (val === ADMIN_PASSWORD) {
+    adminUnlocked = true;
+    closePwModal();
+    switchTab('senarai');
+    document.getElementById('logoutBar').style.display = 'flex';
+    showToast('✓ Akses admin diberikan.', 'success');
+  } else {
+    document.getElementById('pwErr').classList.add('show');
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+    // shake animation
+    const modal = document.querySelector('.pw-modal');
+    modal.style.animation = 'none';
+    modal.offsetHeight;
+    modal.style.animation = 'shake .35s ease';
+  }
+}
+
+function togglePwEye() {
+  const inp = document.getElementById('pwInput');
+  const icon = document.getElementById('eyeIcon');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+  } else {
+    inp.type = 'password';
+    icon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  }
+}
+
+function adminLogout() {
+  adminUnlocked = false;
+  switchTab('daftar');
+  document.getElementById('logoutBar').style.display = 'none';
+  document.getElementById('tabSenarai').classList.remove('active');
+  showToast('Anda telah log keluar dari mod admin.', 'success');
+}
+
 function switchTab(tab) {
   const fp = document.getElementById('formPanel');
   const lp = document.getElementById('listPanel');
@@ -975,13 +1247,29 @@ function switchTab(tab) {
     td.classList.add('active');
     ts.classList.remove('active');
   } else {
+    if (!adminUnlocked) { requestAdminAccess(); return; }
     fp.classList.add('hidden');
     lp.classList.add('active');
     ts.classList.add('active');
     td.classList.remove('active');
   }
 }
+
+// Close modal on overlay click
+document.getElementById('pwOverlay').addEventListener('click', function(e){
+  if (e.target === this) closePwModal();
+});
 </script>
+
+<style>
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-5px)}
+  80%{transform:translateX(5px)}
+}
+</style>
 
 </body>
 </html>

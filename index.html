@@ -652,6 +652,7 @@ onValue(kehadiranRef, snap => {
   updateBadge(true);
   renderTable(allData);
 }, err => {
+  console.error('Firebase listener error:', err);
   updateBadge(false);
   renderTable([]);
   showToast('Ralat membaca data: ' + err.message, 'error');
@@ -715,6 +716,7 @@ async function doSubmit() {
     document.getElementById('dupWarning').classList.remove('show');
     showSuccess(entry);
   } catch(err) {
+    console.error('Submit error:', err);
     showToast('Gagal mendaftar: ' + err.message, 'error');
     btn.classList.remove('loading');
     btn.disabled = false;
@@ -887,6 +889,7 @@ function showToast(msg, type='success') {
   t.className = `toast ${type} show`;
   setTimeout(() => t.className = `toast ${type}`, 3000);
 }
+window.showToast = showToast;
 
 function validateForm() {
   let ok = true;
